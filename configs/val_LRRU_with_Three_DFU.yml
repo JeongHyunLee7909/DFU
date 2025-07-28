@@ -8,7 +8,7 @@ cudnn_deterministic: False
 cudnn_benchmark: True
 
 # Dataset
-data_folder: '/home/temp_user/kitti_depth'
+data_folder: '/home/joshualee/depth_ws/kitti_depth'
 dataset: ['dep', 'gt', 'rgb']
 val: 'select'
 grid_spot: True
@@ -26,9 +26,9 @@ normalize: True
 scale_depth: False
 
 val_h: 352
-val_w: 1216
-random_crop_height: 256
-random_crop_width: 1216
+val_w: 640
+random_crop_height: 352
+random_crop_width: 640
 train_bottom_crop: True
 train_random_crop: True
 val_bottom_crop: True
@@ -56,8 +56,8 @@ prob_bottom_hiddeencoder: 0.5
 bc: 16
 bc_gru: 8
 model: 'LRRU_with_Three_DFU'
-test_dir: '/data1/wangyufei/LRRU++/wandb/IRUN_Base_Three_Modified'
-test_model: './best_model/best_model.pt'
+test_dir: '/home/joshualee/depth_ws/DFU/results'
+test_model: './best_model.pt'
 # test_dir: '/data1/wangyufei/LRRU++/wandb/IRUN_Base_Three_Modified'
 # test_model: '/data1/wangyufei/LRRU++/wandb/IRUN_Base_Three_Modified/best_rmse_model.pt'
 

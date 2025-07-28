@@ -54,19 +54,19 @@ def get_kittipaths(split, args):
         elif args.val == 'select':
             glob_dep = os.path.join(
                 args.data_folder,
-                'depth_selection/val_selection_cropped/velodyne_raw/*.png'
+                'depth_selection/val_test/velodyne_raw/*.png'
             )
             glob_gt = os.path.join(
                 args.data_folder,
-                'depth_selection/val_selection_cropped/groundtruth_depth/*.png'
+                'depth_selection/val_test/groundtruth_depth/*.png'
             )
             glob_K = os.path.join(
                 args.data_folder,
-                'depth_selection/val_selection_cropped/intrinsics/*.txt'
+                'depth_selection/val_test/intrinsics/*.txt'
             )
             glob_rgb = os.path.join(
                 args.data_folder,
-                'depth_selection/val_selection_cropped/image/*.png'
+                'depth_selection/val_test/image/*.png'
             )
     elif split == "test_completion":
 

@@ -605,7 +605,7 @@ class Model(nn.Module, ABC):
 
 
     def forward(self, sample):
-
+        print("Model forward called")
         depth = sample['dep']
         img, lidar = sample['rgb'], sample['ip']
         d_clear = sample['dep_clear']

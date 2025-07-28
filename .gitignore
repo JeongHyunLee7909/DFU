@@ -1,0 +1,4 @@
+*.pyc
+summary/
+results/
+*.pt

@@ -11,13 +11,18 @@ class KittiDepth(data.Dataset):
     def __init__(self, split, args):
         self.args = args
         self.split = split
-        self.paths = get_kittipaths(split, args)
+        self.paths_raw = get_kittipaths(split, args)
+        self.paths = {}
+        for key, path_list in self.paths_raw.items():
+            self.paths[key] = path_list[::]
         self.transforms = kittitransforms
         self.ipfill = fill_in_fast
 
     def __getraw__(self, index):
+        # velodyne raw
         dep = read_depth(self.paths['dep'][index]) if \
             (self.paths['dep'][index] is not None) else None
+        # depth gt
         gt = read_depth(self.paths['gt'][index]) if \
             self.paths['gt'][index] is not None else None
         rgb = read_rgb(self.paths['rgb'][index]) if \

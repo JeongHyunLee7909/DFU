@@ -12,10 +12,10 @@ config = get_cfg(arg)
 import os
 rootPath = os.path.abspath(os.path.dirname(__file__))
 import functools
-if len(config.gpus) == 1:
-    os.environ["CUDA_VISIBLE_DEVICES"] = str(config.gpus[0])
-else:
-    os.environ["CUDA_VISIBLE_DEVICES"] = functools.reduce(lambda x, y: str(x) + ',' + str(y), config.gpus)
+# if len(config.gpus) == 1:
+#     os.environ["CUDA_VISIBLE_DEVICES"] = str(config.gpus[0])
+# else:
+#     os.environ["CUDA_VISIBLE_DEVICES"] = functools.reduce(lambda x, y: str(x) + ',' + str(y), config.gpus)
 
 # BASIC PACKAGES
 import emoji
@@ -24,6 +24,7 @@ import random
 from tqdm import tqdm
 import torch.nn as nn
 from torch.utils.data import DataLoader
+import matplotlib.pyplot as plt
 
 # MODULES
 from dataloaders.kitti_loader import KittiDepth
@@ -60,12 +61,13 @@ def test(args):
     print('Done!')
 
     # NETWORK
+    print(torch.cuda.get_device_name(torch.cuda.current_device()))
     print(emoji.emojize('Prepare model... :writing_hand:', variant="emoji_type"), end=' ')
     model = get_model(args)
     net = model(args)
     net.cuda()
     print('Done!')
-    total_params = count_parameters(net)
+    # total_params = count_parameters(net)
 
     # METRIC
     print(emoji.emojize('Prepare metric... :writing_hand:', variant="emoji_type"), end=' ')
@@ -124,6 +126,7 @@ def test(args):
             torch.cuda.synchronize()
             t0 = time.time()
             if args.tta:
+                print("TTA")
                 samplep = {key: val.cuda() for key, val in sample_.items()
                            if torch.is_tensor(val)}
                 samplep['d_path'] = sample_['d_path']
@@ -143,8 +146,10 @@ def test(args):
                 output_ = {'results': [(predp + predf) / 2.]}
 
             else:
+                print("Not TTA")
                 samplep = {key: val.float().cuda() for key, val in sample_.items()
                            if torch.is_tensor(val)}
+                print("Input keys:", samplep.keys())
                 samplep['d_path'] = sample_['d_path']
 
                 output_ = net(samplep)
@@ -153,6 +158,51 @@ def test(args):
             t1 = time.time()
             t_total += (t1 - t0)
             if 'test' not in args.test_option:
+                rgb_np = samplep['rgb'].squeeze().cpu().detach().numpy()
+                rgb_np = np.transpose(rgb_np, (1, 2, 0))  # Reorder to (height, width, channels)
+                depth_gt_np = samplep['gt'].squeeze().cpu().detach().numpy()
+                dep_np = samplep['dep'].squeeze().cpu().detach().numpy()
+                dep_clear_np = samplep['dep_clear'].squeeze().cpu().detach().numpy()
+                ip_np = samplep['ip'].squeeze().cpu().detach().numpy()
+                depth_pred_np = output_['results'][-1].squeeze().cpu().detach().numpy()
+                print(f"Max for ip_np is {np.max(ip_np)}")
+                print(f"Min for ip_np is {np.min(ip_np)}")
+
+                # Create a figure with two subplots (one for gt, one for pred)
+                fig, ax = plt.subplots(2, 3, figsize=(14, 12))
+
+                # Plot Ground Truth (gt) on the top
+                ax[0][0].imshow(rgb_np)  # Use gray colormap for grayscale images
+                ax[0][0].set_title("RGB")
+                ax[0][0].axis('off')  # Hide the axis for clarity
+
+                # Plot Ground Truth (gt) on the top
+                ax[0][1].imshow(dep_np, cmap='gray')  # Use gray colormap for grayscale images
+                ax[0][1].set_title("Raw Lidar points")
+                ax[0][1].axis('off')  # Hide the axis for clarity
+
+                ax[0][2].imshow(dep_clear_np, cmap='gray')  # Use gray colormap for grayscale images
+                ax[0][2].set_title("Raw Lidar points")
+                ax[0][2].axis('off')  # Hide the axis for clarity
+
+                # Plot Ground Truth (gt) on the top
+                ax[1][0].imshow(ip_np, cmap='gray')  # Use gray colormap for grayscale images
+                ax[1][0].set_title("Reconstructed Lidar points")
+                ax[1][0].axis('off')  # Hide the axis for clarity
+
+                # Plot Prediction (pred) on the bottom
+                ax[1][1].imshow(depth_gt_np, cmap='gray')  # Use gray colormap for grayscale images
+                ax[1][1].set_title("Ground truth")
+                ax[1][1].axis('off')  # Hide the axis for clarity
+
+                # Plot Prediction (pred) on the bottom
+                ax[1][2].imshow(depth_pred_np, cmap='gray')  # Use gray colormap for grayscale images
+                ax[1][2].set_title("Prediction")
+                ax[1][2].axis('off')  # Hide the axis for clarity
+
+                # Show the plot
+                plt.tight_layout()
+                plt.show()
                 metric_test = metric.evaluate(output_['results'][-1], samplep['gt'], 'test')
             else:
                 metric_test = metric.evaluate(output_['results'][-1], samplep['dep'], 'test')

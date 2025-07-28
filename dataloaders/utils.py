@@ -61,25 +61,25 @@ def outlier_removal(lidar):
     # sparse_lidar = np.squeeze(lidar)
     threshold = 1.0
     sparse_lidar = lidar
-    valid_pixels = (sparse_lidar > 0.1).astype(np.float)
+    valid_pixels = (sparse_lidar > 0.1).astype(np.float64)
 
     lidar_sum_7 = cv2.filter2D(sparse_lidar, -1, DIAMOND_KERNEL_7)
     lidar_count_7 = cv2.filter2D(valid_pixels, -1, DIAMOND_KERNEL_7)
 
     lidar_aveg_7 = lidar_sum_7 / (lidar_count_7 + 0.00001)
-    potential_outliers_7 = ((sparse_lidar - lidar_aveg_7) > threshold).astype(np.float)
+    potential_outliers_7 = ((sparse_lidar - lidar_aveg_7) > threshold).astype(np.float64)
 
     lidar_sum_9 = cv2.filter2D(sparse_lidar, -1, DIAMOND_KERNEL_9)
     lidar_count_9 = cv2.filter2D(valid_pixels, -1, DIAMOND_KERNEL_9)
 
     lidar_aveg_9 = lidar_sum_9 / (lidar_count_9 + 0.00001)
-    potential_outliers_9 = ((sparse_lidar - lidar_aveg_9) > threshold).astype(np.float)
+    potential_outliers_9 = ((sparse_lidar - lidar_aveg_9) > threshold).astype(np.float64)
 
     lidar_sum_13 = cv2.filter2D(sparse_lidar, -1, DIAMOND_KERNEL_13)
     lidar_count_13 = cv2.filter2D(valid_pixels, -1, DIAMOND_KERNEL_13)
 
     lidar_aveg_13 = lidar_sum_13 / (lidar_count_13 + 0.00001)
-    potential_outliers_13 = ((sparse_lidar - lidar_aveg_13) > threshold).astype(np.float)
+    potential_outliers_13 = ((sparse_lidar - lidar_aveg_13) > threshold).astype(np.float64)
 
     potential_outliers = potential_outliers_7 + potential_outliers_9 + potential_outliers_13
     lidar_cleared = (sparse_lidar * (1 - potential_outliers)).astype(np.float32)
@@ -93,32 +93,32 @@ def outlier_removal(lidar):
 #     # sparse_lidar = np.squeeze(lidar)
 #     threshold = 0.01
 #     sparse_lidar = lidar
-#     valid_pixels = (sparse_lidar > 0.1).astype(np.float)
+#     valid_pixels = (sparse_lidar > 0.1).astype(np.float64)
 #
 #     lidar_sum_3 = cv2.filter2D(sparse_lidar, -1, FULL_KERNEL_3)
 #     lidar_count_3 = cv2.filter2D(valid_pixels, -1, FULL_KERNEL_3)
 #
 #     lidar_aveg_3 = lidar_sum_3 / (lidar_count_3 + 0.00001)
-#     potential_outliers_3 = ((sparse_lidar - lidar_aveg_3) > threshold).astype(np.float)
+#     potential_outliers_3 = ((sparse_lidar - lidar_aveg_3) > threshold).astype(np.float64)
 #
 #
 #     lidar_sum_7 = cv2.filter2D(sparse_lidar, -1, DIAMOND_KERNEL_7)
 #     lidar_count_7 = cv2.filter2D(valid_pixels, -1, DIAMOND_KERNEL_7)
 #
 #     lidar_aveg_7 = lidar_sum_7 / (lidar_count_7 + 0.00001)
-#     potential_outliers_7 = ((sparse_lidar - lidar_aveg_7) > threshold).astype(np.float)
+#     potential_outliers_7 = ((sparse_lidar - lidar_aveg_7) > threshold).astype(np.float64)
 #
 #     lidar_sum_9 = cv2.filter2D(sparse_lidar, -1, DIAMOND_KERNEL_9)
 #     lidar_count_9 = cv2.filter2D(valid_pixels, -1, DIAMOND_KERNEL_9)
 #
 #     lidar_aveg_9 = lidar_sum_9 / (lidar_count_9 + 0.00001)
-#     potential_outliers_9 = ((sparse_lidar - lidar_aveg_9) > threshold).astype(np.float)
+#     potential_outliers_9 = ((sparse_lidar - lidar_aveg_9) > threshold).astype(np.float64)
 #
 #     lidar_sum_13 = cv2.filter2D(sparse_lidar, -1, DIAMOND_KERNEL_13)
 #     lidar_count_13 = cv2.filter2D(valid_pixels, -1, DIAMOND_KERNEL_13)
 #
 #     lidar_aveg_13 = lidar_sum_13 / (lidar_count_13 + 0.00001)
-#     potential_outliers_13 = ((sparse_lidar - lidar_aveg_13) > threshold).astype(np.float)
+#     potential_outliers_13 = ((sparse_lidar - lidar_aveg_13) > threshold).astype(np.float64)
 #
 #     potential_outliers = potential_outliers_3 + potential_outliers_7 + potential_outliers_9 + potential_outliers_13
 #     lidar_cleared = (sparse_lidar * (1 - potential_outliers)).astype(np.float32)
@@ -304,10 +304,14 @@ def read_depth(file_name):
     # img_file.close()
 
     # Consider empty depth
+    print(f"Original Max for {file_name} is {np.max(image_depth)}")
+    print(f"Original Min for {file_name} is {np.min(image_depth)}")
     assert (np.max(image_depth) == 0) or (np.max(image_depth) > 255), \
         "np.max(depth_png)={}, path={}".format(np.max(image_depth), file_name)
 
     image_depth = image_depth.astype(np.float32) / 256.0
+    print(f"Final Max for {file_name} is {np.max(image_depth)}")
+    print(f"Final Min for {file_name} is {np.min(image_depth)}")
     depth = Image.fromarray(image_depth.astype('float32'), mode='F')
     return depth
 
